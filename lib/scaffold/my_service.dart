@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nottptn/models/user_model.dart';
+import 'package:nottptn/utility/my_style.dart';
 import 'package:nottptn/widget/contact.dart';
 import 'package:nottptn/widget/home.dart';
 
@@ -57,6 +58,22 @@ class _MyServiceState extends State<MyService> {
     );
   }
 
+
+  Widget menuReadQRcode() {
+    return ListTile(
+      leading: Icon(
+        Icons.photo_camera,
+        size: 36.0,
+      ),
+      title: Text('Read QR code'),
+      subtitle: Text('Read QR code or barcode'),
+      onTap: () {
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+
   Widget showAppName() {
     return Text('Nott PTN');
   }
@@ -101,6 +118,7 @@ class _MyServiceState extends State<MyService> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: MyStyle().textColor,
         title: Text('My Service'),
       ),
       body: currentWidget,

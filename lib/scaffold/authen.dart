@@ -65,7 +65,7 @@ class _AuthenState extends State<Authen> {
             MaterialPageRoute(builder: (BuildContext buildContext) {
           return MyService(userModel: userModel,);
         });
-        Navigator.of(context).pushAndRemoveUntil(materialPageRoute,
+        Navigator.of(context).pushAndRemoveUntil(materialPageRoute,   // pushAndRemoveUntil  clear หน้าก่อนหน้า route with out airrow back
             (Route<dynamic> route) {
           return false;
         });
@@ -76,7 +76,8 @@ class _AuthenState extends State<Authen> {
   Widget userForm() {
     return Container(
       width: 250.0,
-      child: TextFormField(
+      child: TextFormField( 
+        initialValue: 'nott',// set default value
         onSaved: (String string) {
           user = string.trim();
         },
@@ -92,6 +93,7 @@ class _AuthenState extends State<Authen> {
     return Container(
       width: 250.0,
       child: TextFormField(
+        initialValue: '123456789',   // set default value
         onSaved: (String string) {
           password = string.trim();
         },
