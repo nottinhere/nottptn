@@ -1,5 +1,7 @@
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:nottptn/models/user_model.dart';
+import 'package:nottptn/scaffold/result_code.dart';
 import 'package:nottptn/utility/my_style.dart';
 import 'package:nottptn/widget/contact.dart';
 import 'package:nottptn/widget/home.dart';
@@ -16,6 +18,7 @@ class _MyServiceState extends State<MyService> {
   //Explicit
   UserModel myUserModel;
   Widget currentWidget = Home();
+  String qrString;
 
   // Method
   @override
@@ -68,9 +71,25 @@ class _MyServiceState extends State<MyService> {
       title: Text('Read QR code'),
       subtitle: Text('Read QR code or barcode'),
       onTap: () {
+        readQRcode();
         Navigator.of(context).pop();
       },
     );
+  }
+
+  Future<void> readQRcode()async{
+    try {
+
+      qrString = await BarcodeScanner.scan();
+      print('QR code = $qrString');
+      if (qrString != null) {
+        MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return ResultCode(result: qrString,);});  // Link to  screen 
+        Navigator.of(context).push(materialPageRoute);
+      }
+    
+    } catch (e) {
+      print('e = $e');
+    }
   }
 
 
@@ -109,6 +128,7 @@ class _MyServiceState extends State<MyService> {
           headDrawer(),
           menuHome(),
           menuContact(),
+          menuReadQRcode(),
         ],
       ),
     );

@@ -78,7 +78,7 @@ class _ListProductState extends State<ListProduct> {
 
   Widget showText(int index) {
     return Container(
-      height: MediaQuery.of(context).size.width*0.5,
+      height: MediaQuery.of(context).size.width * 0.5,
       width: MediaQuery.of(context).size.width * 0.5,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -96,22 +96,39 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Widget showProductItem() {
-    return ListView.builder(
-      controller: scrollController,
-      itemCount: amountListView,
-      itemBuilder: (BuildContext buildContext, int index) {
-        return Row(
-          children: <Widget>[
-            showImage(index),
-            showText(index),
-          ],
-        );
-      },
+    return Expanded(
+          child: ListView.builder(
+        controller: scrollController,
+        itemCount: amountListView,
+        itemBuilder: (BuildContext buildContext, int index) {
+          return Row(
+            children: <Widget>[
+              showImage(index),
+              showText(index),
+            ],
+          );
+        },
+      ),
     );
   }
 
   Widget showProgressIndicate() {
     return Center(child: CircularProgressIndicator());
+  }
+
+  Widget myLayout() {
+    return Column(
+      children: <Widget>[searchForm(),showProductItem(),],
+    );
+  }
+
+  Widget searchForm() {
+    return Container(
+      margin: EdgeInsets.only(left: 40.0,right: 40.0),
+      child: TextField(
+        decoration: InputDecoration(hintText: 'Search'),
+      ),
+    );
   }
 
   @override
@@ -122,7 +139,7 @@ class _ListProductState extends State<ListProduct> {
       ),
       body: productAllModels.length == 0
           ? showProgressIndicate()
-          : showProductItem(),
+          : myLayout(),
     );
   }
 }
