@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/product_all_model.dart';
+import 'package:nottptn/utility/my_style.dart';
+
+import 'detail.dart';
 
 class ListProduct extends StatefulWidget {
   final int index;
@@ -12,12 +16,36 @@ class ListProduct extends StatefulWidget {
   _ListProductState createState() => _ListProductState();
 }
 
+//class
+class Debouncer {
+  // delay เวลาให้มีการหน่วง เมื่อ key searchview
+
+  //Explicit
+  final int milliseconds;
+  VoidCallback action;
+  Timer timer;
+
+  //constructor
+  Debouncer({this.milliseconds});
+  run(VoidCallback action) {
+    if (timer != null) {
+      timer.cancel();
+    }
+    timer = Timer(Duration(microseconds: milliseconds), action);
+  }
+}
+
 class _ListProductState extends State<ListProduct> {
   // Explicit
   int myIndex;
   List<ProductAllModel> productAllModels = List(); // set array
+  List<ProductAllModel> filterProductAllModels = List();
+
   int amountListView = 6;
   ScrollController scrollController = ScrollController();
+  final Debouncer debouncer =
+      Debouncer(milliseconds: 500); // ตั้งค่า เวลาที่จะ delay
+  bool statusStart = true;
 
   // Method
   @override
@@ -39,8 +67,8 @@ class _ListProductState extends State<ListProduct> {
 
         setState(() {
           amountListView = amountListView + 2;
-          if (amountListView > productAllModels.length) {
-            amountListView = productAllModels.length;
+          if (amountListView > filterProductAllModels.length) {
+            amountListView = filterProductAllModels.length;
           }
         });
       }
@@ -48,10 +76,9 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Future<void> readData() async {
-    String url = 'http://ptnpharma.com/app/json_allproduct.php';
+    String url = MyStyle().readAllProduct;
     if (myIndex != 0) {
-      url =
-          'http://ptnpharma.com/app/json_allproduct.php?product_mode=$myIndex';
+      url = '${MyStyle().readProductWhereMode}$myIndex';
     }
 
     Response response = await get(url);
@@ -64,16 +91,17 @@ class _ListProductState extends State<ListProduct> {
       ProductAllModel productAllModel = ProductAllModel.fromJson(map);
       setState(() {
         productAllModels.add(productAllModel);
+        filterProductAllModels = productAllModels;
       });
     }
   }
 
   Widget showName(int index) {
-    return Text(productAllModels[index].title);
+    return Text(filterProductAllModels[index].title);
   }
 
   Widget showStock(int index) {
-    return Text(productAllModels[index].stock);
+    return Text(filterProductAllModels[index].stock);
   }
 
   Widget showText(int index) {
@@ -91,21 +119,30 @@ class _ListProductState extends State<ListProduct> {
     return Container(
       padding: EdgeInsets.all(5.0),
       width: MediaQuery.of(context).size.width * 0.4,
-      child: Image.network(productAllModels[index].photo),
+      child: Image.network(filterProductAllModels[index].photo),
     );
   }
 
   Widget showProductItem() {
     return Expanded(
-          child: ListView.builder(
+      child: ListView.builder(
         controller: scrollController,
         itemCount: amountListView,
         itemBuilder: (BuildContext buildContext, int index) {
-          return Row(
-            children: <Widget>[
-              showImage(index),
-              showText(index),
-            ],
+          return GestureDetector(
+            child: Row(
+              children: <Widget>[
+                showImage(index),
+                showText(index),
+              ],
+            ),
+            onTap: () {
+              MaterialPageRoute materialPageRoute =
+                  MaterialPageRoute(builder: (BuildContext buildContext) {
+                return Detail(productAllModel: filterProductAllModels[index],);
+              });
+              Navigator.of(context).push(materialPageRoute);
+            },
           );
         },
       ),
@@ -113,22 +150,52 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Widget showProgressIndicate() {
-    return Center(child: CircularProgressIndicator());
-  }
-
-  Widget myLayout() {
-    return Column(
-      children: <Widget>[searchForm(),showProductItem(),],
+    return Center(
+      child:
+          statusStart ? CircularProgressIndicator() : Text('Search not found'),
     );
   }
+
+  /*
+  Widget myLayout() {
+    return Column(
+      children: <Widget>[
+        searchForm(),
+        showProductItem(),
+      ],
+    );
+  }
+  */
 
   Widget searchForm() {
     return Container(
-      margin: EdgeInsets.only(left: 40.0,right: 40.0),
+      // color: Colors.grey,
+      padding:
+          EdgeInsets.only(left: 40.0, right: 40.0, top: 20.0, bottom: 20.0),
       child: TextField(
         decoration: InputDecoration(hintText: 'Search'),
+        onChanged: (String string) {
+          statusStart = false;
+          debouncer.run(() {
+            setState(() {
+              filterProductAllModels =
+                  productAllModels.where((ProductAllModel productAllModel) {
+                return (productAllModel.title
+                    .toLowerCase()
+                    .contains(string.toLowerCase()));
+              }).toList();
+              amountListView = filterProductAllModels.length;
+            });
+          });
+        },
       ),
     );
+  }
+
+  Widget showContent() {
+    return filterProductAllModels.length == 0
+        ? showProgressIndicate()
+        : showProductItem();
   }
 
   @override
@@ -137,9 +204,16 @@ class _ListProductState extends State<ListProduct> {
       appBar: AppBar(
         title: Text('List product'),
       ),
-      body: productAllModels.length == 0
-          ? showProgressIndicate()
-          : myLayout(),
+      // body: filterProductAllModels.length == 0
+      //     ? showProgressIndicate()
+      //     : myLayout(),
+
+      body: Column(
+        children: <Widget>[
+          searchForm(),
+          showContent(),
+        ],
+      ),
     );
   }
 }
