@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 import 'package:nottptn/models/product_all_model.dart';
 import 'package:nottptn/models/unit_size_model.dart';
 import 'package:nottptn/utility/my_style.dart';
+import 'package:nottptn/utility/normal_dialog.dart';
 
 class Detail extends StatefulWidget {
   final ProductAllModel productAllModel;
@@ -19,7 +20,11 @@ class _DetailState extends State<Detail> {
   ProductAllModel currentProductAllModel;
   ProductAllModel productAllModel;
   List<UnitSizeModel> unitSizeModels = List();
-  List<int> amounts = [1,2,3]; // amount[0] -> s,amount[1] -> m,amount[2] -> l;
+  List<int> amounts = [
+    0,
+    0,
+    0
+  ]; // amount[0] -> s,amount[1] -> m,amount[2] -> l;
 
   // Method
   @override
@@ -115,33 +120,52 @@ class _DetailState extends State<Detail> {
   }
 
   Widget decButton(int index) {
+    int value = amounts[index];
     return IconButton(
       icon: Icon(Icons.remove_circle_outline),
       onPressed: () {
+
         print('dec index $index');
+        if (value==0) {
+          normalDialog(context, 'Cannot decrese', 'Because empty cart');
+        } else {
+         setState(() {
+          value--;
+          amounts[index] = value;
+        });
+       }
+
       },
     );
   }
 
   Widget incButton(int index) {
+    int value = amounts[index];
+
     return IconButton(
       icon: Icon(Icons.add_circle_outline),
       onPressed: () {
-        print('inc index $index');
+        setState(() {
+          print('inc index $index');
+          value++;
+          amounts[index] = value;
+        });
       },
     );
   }
 
-  Widget showValue(int index) {
-    return Text('${amounts[index]}');
+  Widget showValue(int value) {
+    return Text('${value}');
   }
 
   Widget incDecValue(int index) {
+    int value = amounts[index];
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         decButton(index),
-        showValue(index),
+        showValue(value),
         incButton(index),
       ],
     );
