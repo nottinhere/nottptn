@@ -4,9 +4,14 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/promote_model.dart';
+import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/scaffold/list_product.dart';
 
 class Home extends StatefulWidget {
+
+  final UserModel userModel;
+  Home ({Key key,this.userModel}):super(key:key);
+
   @override
   _HomeState createState() => _HomeState();
 }
@@ -16,12 +21,15 @@ class _HomeState extends State<Home> {
   // List<PromoteModel> promoteModels = List();
   List<Widget> promoteLists = List();
   List<String> urlImages = List();
+  int amontCart = 0;
+  UserModel myUserModel;
 
   // Method
   @override
   void initState() {
     super.initState();
     readPromotion();
+    myUserModel = widget.userModel;
   }
 
   Future<void> readPromotion() async {
@@ -79,6 +87,7 @@ class _HomeState extends State<Home> {
         MaterialPageRoute(builder: (BuildContext buildContext) {
       return ListProduct(
         index: index,
+        userModel: myUserModel,
       );
     });
     Navigator.of(context).push(materialPageRoute);
@@ -210,6 +219,7 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

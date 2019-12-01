@@ -1,0 +1,297 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:nottptn/models/price_list_model.dart';
+import 'package:nottptn/models/product_all_model.dart';
+import 'package:nottptn/models/user_model.dart';
+import 'package:nottptn/utility/my_style.dart';
+
+class DetailCart extends StatefulWidget {
+  final UserModel userModel;
+  DetailCart({Key key, this.userModel}) : super(key: key);
+
+  @override
+  _DetailCartState createState() => _DetailCartState();
+}
+
+class _DetailCartState extends State<DetailCart> {
+  // Explicit
+  UserModel myUserModel;
+
+  List<PriceListModel> priceListSModels = List();
+  List<PriceListModel> priceListMModels = List();
+  List<PriceListModel> priceListLModels = List();
+
+  List<ProductAllModel> productAllModels = List();
+  List<Map<String, dynamic>> sMap = List();
+  List<Map<String, dynamic>> mMap = List();
+  List<Map<String, dynamic>> lMap = List();
+  int amontCart = 0;
+
+  // Method
+  @override
+  void initState() {
+    // initState = auto load เพื่อแสดงใน  stateless
+    // TODO: implement initState
+    super.initState();
+    myUserModel = widget.userModel;
+    setState(() {
+      // setState เพื่อสั่งให้ทำงานถีง initState จะ load เสร็จแล้วมันก็ย้อนมาทำใน  setState
+      readCart();
+    });
+  }
+
+  Future<void> readCart() async {
+    String memberId = myUserModel.id;
+    String url = '${MyStyle().loadMyCart}$memberId';
+
+    Response response = await get(url);
+    var result = json.decode(response.body);
+    var cartList = result['cart'];
+
+    for (var map in cartList) {
+      ProductAllModel productAllModel = ProductAllModel.fromJson(map);
+
+      Map<String, dynamic> priceListMap = map['price_list'];
+
+      Map<String, dynamic> sizeSmap = priceListMap['s'];
+      print(sizeSmap);
+
+      if (sizeSmap == null) {
+        sMap.add({'lable': ''});
+        PriceListModel priceListModel = PriceListModel.fromJson({'lable': ''});
+        priceListSModels.add(priceListModel);
+      } else {
+        sMap.add(sizeSmap);
+        PriceListModel priceListModel = PriceListModel.fromJson(sizeSmap);
+        priceListSModels.add(priceListModel);
+      }
+
+      Map<String, dynamic> sizeMmap = priceListMap['m'];
+      if (sizeMmap == null) {
+        mMap.add({'lable': ''});
+        PriceListModel priceListModel = PriceListModel.fromJson({'lable': ''});
+        priceListMModels.add(priceListModel);
+      } else {
+        mMap.add(sizeMmap);
+         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
+        priceListMModels.add(priceListModel);
+     }
+
+      Map<String, dynamic> sizeLmap = priceListMap['l'];
+      if (sizeLmap == null) {
+        lMap.add({'lable': ''});
+        PriceListModel priceListModel = PriceListModel.fromJson({'lable': ''});
+        priceListLModels.add(priceListModel);
+      } else {
+        lMap.add(sizeLmap);
+         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
+        priceListLModels.add(priceListModel);
+     }
+
+      setState(() {
+        amontCart++;
+        productAllModels.add(productAllModel);
+      });
+    }
+  }
+
+  Widget showCart() {
+    return Container(
+      margin: EdgeInsets.only(top: 5.0, right: 5.0),
+      width: 32.0,
+      height: 32.0,
+      child: Stack(
+        children: <Widget>[
+          Image.asset('images/shopping_cart.png'),
+          Text(
+            '$amontCart',
+            style: TextStyle(
+              backgroundColor: Colors.blue.shade600,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget showTitle(int index) {
+    return Text(productAllModels[index].title);
+  }
+
+  Widget editButton(int index, String size) {
+    return IconButton(
+      icon: Icon(Icons.edit),
+      onPressed: () {
+        myAlertDialog(index, size);
+      },
+    );
+  }
+
+  Widget alertTitle() {
+    return ListTile(
+      leading: Icon(
+        Icons.edit,
+        size: 36.0,
+      ),
+      title: Text('Edit cart'),
+    );
+  }
+
+  Widget alertContent(int index, String size) {
+    String quantity = '';
+    
+    if (size == 's') {
+      quantity = priceListSModels[index].quantity;
+    }else if (size == 'm') {
+      quantity = priceListMModels[index].quantity;
+    }else if (size == 'l') {
+      quantity = priceListLModels[index].quantity;      
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(productAllModels[index].title),
+        Text('Size = $size'),
+        Container(
+          width: 100.0,
+          child: TextFormField(
+            initialValue: quantity,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void myAlertDialog(int index, String size) {
+    showDialog(
+        context: context,
+        builder: (BuildContext buildContext) {
+          return AlertDialog(
+            title: alertTitle(),
+            content: alertContent(index, size),
+            actions: <Widget>[
+              cancelButton(),
+              okButton(),
+            ],
+          );
+        });
+  }
+
+  Widget okButton() {
+    return FlatButton(
+      child: Text('OK'),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Widget cancelButton() {
+    return FlatButton(
+      child: Text('Cancel'),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Widget deleteButton(int index, String size) {
+    return IconButton(
+      icon: Icon(Icons.remove_circle_outline),
+      onPressed: () {},
+    );
+  }
+
+  Widget editAndDeleteButton(int index, String size) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        editButton(index, size),
+        deleteButton(index, size),
+      ],
+    );
+  }
+
+  Widget showSText(int index) {
+    String price = sMap[index]['price'];
+    String lable = sMap[index]['lable'];
+    String quantity = sMap[index]['quantity'];
+
+    return lable.isEmpty
+        ? SizedBox()
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('$price บาท/ $lable'),
+              Text('จำนวน $quantity'),
+              editAndDeleteButton(index, 's'),
+            ],
+          );
+  }
+
+  Widget showMText(int index) {
+    String price = mMap[index]['price'];
+    String lable = mMap[index]['lable'];
+    String quantity = mMap[index]['quantity'];
+
+    return lable.isEmpty
+        ? SizedBox()
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('$price บาท/ $lable'),
+              Text('จำนวน $quantity'),
+              editAndDeleteButton(index, 'm'),
+            ],
+          );
+  }
+
+  Widget showLText(int index) {
+    String price = lMap[index]['price'];
+    String lable = lMap[index]['lable'];
+    String quantity = lMap[index]['quantity'];
+
+    return lable.isEmpty
+        ? SizedBox()
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('$price บาท/ $lable'),
+              Text('จำนวน $quantity'),
+              editAndDeleteButton(index, 'l'),
+            ],
+          );
+  }
+
+  Widget showListCart() {
+    return ListView.builder(
+      itemCount: productAllModels.length,
+      itemBuilder: (BuildContext buildContext, int index) {
+        return Column(
+          children: <Widget>[
+            showTitle(index),
+            showSText(index),
+            showMText(index),
+            showLText(index),
+            Divider(),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Detail Cart'),
+      ),
+      body: showListCart(),
+    );
+  }
+}

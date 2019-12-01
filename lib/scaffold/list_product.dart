@@ -4,13 +4,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/product_all_model.dart';
+import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/utility/my_style.dart';
 
 import 'detail.dart';
+import 'detail_cart.dart';
 
 class ListProduct extends StatefulWidget {
   final int index;
-  ListProduct({Key key, this.index}) : super(key: key);
+  final UserModel userModel;
+  ListProduct({Key key, this.index, this.userModel}) : super(key: key);
 
   @override
   _ListProductState createState() => _ListProductState();
@@ -40,6 +43,8 @@ class _ListProductState extends State<ListProduct> {
   int myIndex;
   List<ProductAllModel> productAllModels = List(); // set array
   List<ProductAllModel> filterProductAllModels = List();
+  int amontCart = 0;
+  UserModel myUserModel;
 
   int amountListView = 6;
   ScrollController scrollController = ScrollController();
@@ -53,10 +58,14 @@ class _ListProductState extends State<ListProduct> {
     // auto load
     super.initState();
     myIndex = widget.index;
-
-    readData(); // read  ข้อมูลมาแสดง
+    myUserModel = widget.userModel;
 
     createController(); // เมื่อ scroll to bottom
+
+    setState(() {
+      readData(); // read  ข้อมูลมาแสดง
+      readCart();
+    });
   }
 
   void createController() {
@@ -139,7 +148,10 @@ class _ListProductState extends State<ListProduct> {
             onTap: () {
               MaterialPageRoute materialPageRoute =
                   MaterialPageRoute(builder: (BuildContext buildContext) {
-                return Detail(productAllModel: filterProductAllModels[index],);
+                return Detail(
+                  productAllModel: filterProductAllModels[index],
+                  userModel: myUserModel,
+                );
               });
               Navigator.of(context).push(materialPageRoute);
             },
@@ -198,11 +210,67 @@ class _ListProductState extends State<ListProduct> {
         : showProductItem();
   }
 
+  Future<void> readCart() async {
+    String memberId = myUserModel.id;
+    String url =
+        'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
+
+    Response response = await get(url);
+    var result = json.decode(response.body);
+    var cartList = result['cart'];
+
+    for (var map in cartList) {
+      setState(() {
+        amontCart++;
+      });
+    }
+  }
+
+  Widget showCart() {
+    return GestureDetector(
+      onTap: () {
+        routeToDetailCart();
+      },
+      child: Container(
+        margin: EdgeInsets.only(top: 5.0, right: 5.0),
+        width: 32.0,
+        height: 32.0,
+        child: Stack(
+          children: <Widget>[
+            Image.asset('images/shopping_cart.png'),
+            Text(
+              '$amontCart',
+              style: TextStyle(
+                backgroundColor: Colors.blue.shade600,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void routeToDetailCart() {
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext buildContext) {
+      return DetailCart(
+        userModel: myUserModel,
+      );
+    });
+    Navigator.of(context).push(materialPageRoute);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: MyStyle().textColor,
         title: Text('List product'),
+        actions: <Widget>[
+          showCart(),
+        ],
       ),
       // body: filterProductAllModels.length == 0
       //     ? showProgressIndicate()

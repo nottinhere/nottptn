@@ -16,7 +16,9 @@ class MyStyle {
   String getUserWhereUserAndPass  = 'http://ptnpharma.com/app/json_login_get.php';
   String getProductWhereId        = 'http://ptnpharma.com/app/json_productdetail.php?id=';
 
-/*
+  String loadMyCart               =  'http://ptnpharma.com/app/json_loadmycart.php?memberId=';
+
+  /*
   String readAllProduct           = 'http://ptnpharma.com/app/json_product.php';
   String readProductWhereMode     = 'http://ptnpharma.com/app/json_product.php?product_mode=';
   String getUserWhereUserAndPass  = 'http://son.com/app/json_login_get.php';

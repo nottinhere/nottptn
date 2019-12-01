@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/scaffold/result_code.dart';
 import 'package:nottptn/utility/my_style.dart';
 import 'package:nottptn/widget/contact.dart';
 import 'package:nottptn/widget/home.dart';
+
+import 'detail_cart.dart';
 
 class MyService extends StatefulWidget {
   final UserModel userModel;
@@ -17,14 +22,21 @@ class MyService extends StatefulWidget {
 class _MyServiceState extends State<MyService> {
   //Explicit
   UserModel myUserModel;
-  Widget currentWidget = Home();
+  Widget currentWidget;
   String qrString;
+  int amontCart = 0;
 
   // Method
   @override
   void initState() {
     super.initState(); // จะทำงานก่อน build
-    myUserModel = widget.userModel;
+    setState(() {
+      myUserModel = widget.userModel;
+      currentWidget = Home(
+        userModel: myUserModel,
+      );
+    });
+    readCart();
   }
 
   Widget menuHome() {
@@ -37,7 +49,9 @@ class _MyServiceState extends State<MyService> {
       subtitle: Text('Description Home'),
       onTap: () {
         setState(() {
-          currentWidget = Home();
+          currentWidget = Home(
+            userModel: myUserModel,
+          );
         });
         Navigator.of(context).pop();
       },
@@ -61,7 +75,6 @@ class _MyServiceState extends State<MyService> {
     );
   }
 
-
   Widget menuReadQRcode() {
     return ListTile(
       leading: Icon(
@@ -77,21 +90,23 @@ class _MyServiceState extends State<MyService> {
     );
   }
 
-  Future<void> readQRcode()async{
+  Future<void> readQRcode() async {
     try {
-
       qrString = await BarcodeScanner.scan();
       print('QR code = $qrString');
       if (qrString != null) {
-        MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return ResultCode(result: qrString,);});  // Link to  screen 
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext buildContext) {
+          return ResultCode(
+            result: qrString,
+          );
+        }); // Link to  screen
         Navigator.of(context).push(materialPageRoute);
       }
-    
     } catch (e) {
       print('e = $e');
     }
   }
-
 
   Widget showAppName() {
     return Text('Nott PTN');
@@ -134,10 +149,65 @@ class _MyServiceState extends State<MyService> {
     );
   }
 
+  Future<void> readCart() async {
+    String memberId = myUserModel.id;
+    String url =
+        'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
+
+    Response response = await get(url);
+    var result = json.decode(response.body);
+    var cartList = result['cart'];
+
+    for (var map in cartList) {
+      setState(() {
+        amontCart++;
+      });
+    }
+  }
+
+  Widget showCart() {
+    return GestureDetector(
+      onTap: () {
+        routeToDetailCart();
+      },
+      child: Container(
+        margin: EdgeInsets.only(top: 5.0, right: 5.0),
+        width: 32.0,
+        height: 32.0,
+        child: Stack(
+          children: <Widget>[
+            Image.asset('images/shopping_cart.png'),
+            Text(
+              '$amontCart',
+              style: TextStyle(
+                backgroundColor: Colors.blue.shade600,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void routeToDetailCart() {
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext buildContext) {
+      return DetailCart(
+        userModel: myUserModel,
+      );
+    });
+    Navigator.of(context).push(materialPageRoute);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: <Widget>[
+          showCart(),
+        ],
         backgroundColor: MyStyle().textColor,
         title: Text('My Service'),
       ),
