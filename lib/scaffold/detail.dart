@@ -31,6 +31,7 @@ class _DetailState extends State<Detail> {
   ]; // amount[0] -> s,amount[1] -> m,amount[2] -> l;
   int amontCart = 0;
   UserModel myUserModel;
+  String id; // productID
 
   // Method
   @override
@@ -46,7 +47,7 @@ class _DetailState extends State<Detail> {
 
   Future<void> getProductWhereID() async {
     if (currentProductAllModel != null) {
-      String id = currentProductAllModel.id;
+      id = currentProductAllModel.id;
       String url = '${MyStyle().getProductWhereId}$id';
       Response response = await get(url);
       var result = json.decode(response.body);
@@ -193,6 +194,7 @@ class _DetailState extends State<Detail> {
   }
 
   Future<void> readCart() async {
+    amontCart = 0;
     String memberId = myUserModel.id;
     String url =
         'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
@@ -278,13 +280,67 @@ class _DetailState extends State<Detail> {
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  String productID = id;
+                  String memberID = myUserModel.id;
+
+                  int index = 0;
+                  List<bool> status = List();
+
+                  for (var object in unitSizeModels) {
+                    if (amounts[index] == 0) {
+                      status.add(true);
+                    } else {
+                      status.add(false);
+                    }
+
+                    index++;
+                  }
+
+                  bool sumStatus = true;
+                  if (status.length == 1) {
+                    sumStatus = status[0];
+                  } else {
+                    sumStatus = status[0] && status[1];
+                  }
+
+                  if (sumStatus) {
+                    normalDialog(
+                        context, 'Do not choose item', 'Please choose item');
+                  } else {
+                    int index = 0;
+                    for (var object in unitSizeModels) {
+                      String unitSize = unitSizeModels[index].unit;
+                      int qTY = amounts[index];
+
+                      print(
+                          'productID = $productID, memberID=$memberID, unitSize=$unitSize, QTY=$qTY');
+                      if (qTY != 0) {
+                        addCart(productID, unitSize, qTY, memberID);
+                      }
+                      index++;
+                    }
+                  }
+                },
               ),
             ),
           ],
         ),
       ],
     );
+  }
+
+  Future<void> addCart(
+      String productID, String unitSize, int qTY, String memberID) async {
+    String url =
+        'http://ptnpharma.com/app/json_savemycart.php?productID=$productID&unitSize=$unitSize&QTY=$qTY&memberID=$memberID';
+
+    Response response = await get(url).then((response) {
+      print('upload ok');
+      readCart();
+      MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return DetailCart(userModel: myUserModel,);});
+      Navigator.of(context).push(materialPageRoute);
+    });
   }
 
   Widget showDetailList() {

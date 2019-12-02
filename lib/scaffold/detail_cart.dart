@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -28,6 +29,7 @@ class _DetailCartState extends State<DetailCart> {
   List<Map<String, dynamic>> mMap = List();
   List<Map<String, dynamic>> lMap = List();
   int amontCart = 0;
+  String newQTY = '';
 
   // Method
   @override
@@ -43,6 +45,8 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   Future<void> readCart() async {
+    clearArray();
+
     String memberId = myUserModel.id;
     String url = '${MyStyle().loadMyCart}$memberId';
 
@@ -75,9 +79,9 @@ class _DetailCartState extends State<DetailCart> {
         priceListMModels.add(priceListModel);
       } else {
         mMap.add(sizeMmap);
-         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
+        PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
         priceListMModels.add(priceListModel);
-     }
+      }
 
       Map<String, dynamic> sizeLmap = priceListMap['l'];
       if (sizeLmap == null) {
@@ -86,15 +90,25 @@ class _DetailCartState extends State<DetailCart> {
         priceListLModels.add(priceListModel);
       } else {
         lMap.add(sizeLmap);
-         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
+        PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
         priceListLModels.add(priceListModel);
-     }
+      }
 
       setState(() {
         amontCart++;
         productAllModels.add(productAllModel);
       });
     }
+  }
+
+  void clearArray() {
+    productAllModels.clear();
+    priceListSModels.clear();
+    priceListMModels.clear();
+    priceListLModels.clear();
+    sMap.clear();
+    mMap.clear();
+    lMap.clear();
   }
 
   Widget showCart() {
@@ -143,13 +157,16 @@ class _DetailCartState extends State<DetailCart> {
 
   Widget alertContent(int index, String size) {
     String quantity = '';
-    
+
     if (size == 's') {
       quantity = priceListSModels[index].quantity;
-    }else if (size == 'm') {
+      newQTY = quantity;
+    } else if (size == 'm') {
       quantity = priceListMModels[index].quantity;
-    }else if (size == 'l') {
-      quantity = priceListLModels[index].quantity;      
+      newQTY = quantity;
+    } else if (size == 'l') {
+      quantity = priceListLModels[index].quantity;
+      newQTY = quantity;
     }
 
     return Column(
@@ -158,8 +175,11 @@ class _DetailCartState extends State<DetailCart> {
         Text(productAllModels[index].title),
         Text('Size = $size'),
         Container(
-          width: 100.0,
+          width: 50.0,
           child: TextFormField(
+            onChanged: (String string) {
+              newQTY = string.trim();
+            },
             initialValue: quantity,
           ),
         ),
@@ -176,19 +196,37 @@ class _DetailCartState extends State<DetailCart> {
             content: alertContent(index, size),
             actions: <Widget>[
               cancelButton(),
-              okButton(),
+              okButton(index, size),
             ],
           );
         });
   }
 
-  Widget okButton() {
+  Widget okButton(int index, String size) {
+    String productID = productAllModels[index].id;
+    String unitSize = size;
+    String memberID = myUserModel.id;
+
     return FlatButton(
       child: Text('OK'),
       onPressed: () {
+        print(
+            'productID = $productID ,unitSize = $unitSize ,memberID = $memberID, newQTY = $newQTY');
+        editDetailCart(productID, unitSize, memberID);
         Navigator.of(context).pop();
       },
     );
+  }
+
+  // Post ค่าไปยัง API ที่ต้องการ
+  Future<void> editDetailCart(
+      String productID, String unitSize, String memberID) async {
+    String url =
+        'http://ptnpharma.com/app/json_updatemycart.php?productID=$productID&unitSize=$unitSize&newQTY=$newQTY&memberID=$memberID';
+
+    await get(url).then((response) {
+      readCart();
+    });
   }
 
   Widget cancelButton() {
@@ -203,8 +241,52 @@ class _DetailCartState extends State<DetailCart> {
   Widget deleteButton(int index, String size) {
     return IconButton(
       icon: Icon(Icons.remove_circle_outline),
-      onPressed: () {},
+      onPressed: () {
+        confirmDelete(index, size);
+      },
     );
+  }
+
+  void confirmDelete(int index, String size) {
+    String titleProduct = productAllModels[index].title;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirm delete'),
+            content: Text('Do you want delete : $titleProduct'),
+            actions: <Widget>[
+              cancelButton(),
+              comfirmButton(index, size),
+            ],
+          );
+        });
+  }
+
+  Widget comfirmButton(int index, String size) {
+    return FlatButton(
+      child: Text('Confirm'),
+      onPressed: (){
+        deleteCart(index, size);
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Future<void> deleteCart(int index, String size)async{
+
+        String productID  = productAllModels[index].id;
+        String unitSize   = size;
+        String memberID   = myUserModel.id; 
+
+        print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
+
+        String url = 'http://ptnpharma.com/app/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+
+        await get(url).then((response) {
+          readCart();
+        });
   }
 
   Widget editAndDeleteButton(int index, String size) {
