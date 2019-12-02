@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:nottptn/scaffold/result_code.dart';
 import 'package:nottptn/utility/my_style.dart';
 import 'package:nottptn/widget/contact.dart';
 import 'package:nottptn/widget/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'detail_cart.dart';
 
@@ -57,6 +59,26 @@ class _MyServiceState extends State<MyService> {
         Navigator.of(context).pop();
       },
     );
+  }
+
+  Widget menuLogOut() {
+    return ListTile(
+      leading: Icon(
+        Icons.exit_to_app,
+        size: 36.0,
+      ),
+      title: Text('Logout and exit'),
+      subtitle: Text('Logout and exit'),
+      onTap: () {
+      logOut();  
+      },
+    );
+  }
+
+  Future<void> logOut()async{
+      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.clear();
+      exit(0);
   }
 
   Widget menuContact() {
@@ -145,6 +167,7 @@ class _MyServiceState extends State<MyService> {
           menuHome(),
           menuContact(),
           menuReadQRcode(),
+          menuLogOut(),
         ],
       ),
     );
