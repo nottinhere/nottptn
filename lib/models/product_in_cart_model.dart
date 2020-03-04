@@ -4,7 +4,7 @@ class ProductInCartModel {
   String photo;
   PriceList priceList;
   String detail;
-  String id;
+  int id;
 
   ProductInCartModel(
       {this.title,
@@ -59,9 +59,9 @@ class PriceList {
 
 class S {
   String lable;
-  String price;
+  int price;
   String unit;
-  int quantity;
+  String quantity;
 
   S({this.lable, this.price, this.unit, this.quantity});
 
@@ -81,3 +81,4 @@ class S {
     return data;
   }
 }
+
