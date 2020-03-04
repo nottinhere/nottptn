@@ -195,7 +195,7 @@ class _DetailState extends State<Detail> {
 
   Future<void> readCart() async {
     amontCart = 0;
-    String memberId = myUserModel.id;
+    String memberId = myUserModel.id.toString();
     String url =
         'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
 
@@ -282,7 +282,7 @@ class _DetailState extends State<Detail> {
                 ),
                 onPressed: () {
                   String productID = id;
-                  String memberID = myUserModel.id;
+                  String memberID = myUserModel.id.toString();
 
                   int index = 0;
                   List<bool> status = List();

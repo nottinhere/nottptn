@@ -211,7 +211,7 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Future<void> readCart() async {
-    String memberId = myUserModel.id;
+    String memberId = myUserModel.id.toString();
     String url =
         'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
 

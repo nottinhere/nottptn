@@ -86,6 +86,7 @@ class _AuthenState extends State<Authen> {
       // No space
       String url =
           '${MyStyle().getUserWhereUserAndPass}?username=$user&password=$password';
+          print('url ======>>>> $url');
       Response response = await get(
           url); // await จะต้องทำงานใน await จะเสร็จจึงจะไปทำ process ต่อไป
       var result = json.decode(response.body);
@@ -99,6 +100,7 @@ class _AuthenState extends State<Authen> {
       } else {
         Map<String, dynamic> map = result['data'];
         print('map = $map');
+        
         userModel = UserModel.fromJson(map);
 
         if (remember) {
