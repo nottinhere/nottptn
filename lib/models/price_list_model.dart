@@ -1,6 +1,6 @@
 class PriceListModel {
   String lable;
-  String price;
+  int price;
   String unit;
   String quantity;
 
@@ -22,3 +22,4 @@ class PriceListModel {
     return data;
   }
 }
+

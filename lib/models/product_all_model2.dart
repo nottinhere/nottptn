@@ -1,20 +1,22 @@
-class ProductInCartModel {
+class ProductAllModel2 {
   String title;
   String productCode;
   String photo;
   PriceList priceList;
   String detail;
+  int stock;
   int id;
 
-  ProductInCartModel(
+  ProductAllModel2(
       {this.title,
       this.productCode,
       this.photo,
       this.priceList,
       this.detail,
+      this.stock,
       this.id});
 
-  ProductInCartModel.fromJson(Map<String, dynamic> json) {
+  ProductAllModel2.fromJson(Map<String, dynamic> json) {
     title = json['title'];
     productCode = json['product_code'];
     photo = json['photo'];
@@ -22,6 +24,7 @@ class ProductInCartModel {
         ? new PriceList.fromJson(json['price_list'])
         : null;
     detail = json['detail'];
+    stock = json['stock'];
     id = json['id'];
   }
 
@@ -34,6 +37,7 @@ class ProductInCartModel {
       data['price_list'] = this.priceList.toJson();
     }
     data['detail'] = this.detail;
+    data['stock'] = this.stock;
     data['id'] = this.id;
     return data;
   }
@@ -61,15 +65,13 @@ class S {
   String lable;
   int price;
   String unit;
-  String quantity;
 
-  S({this.lable, this.price, this.unit, this.quantity});
+  S({this.lable, this.price, this.unit});
 
   S.fromJson(Map<String, dynamic> json) {
     lable = json['lable'];
     price = json['price'];
     unit = json['unit'];
-    quantity = json['quantity'];
   }
 
   Map<String, dynamic> toJson() {
@@ -77,7 +79,6 @@ class S {
     data['lable'] = this.lable;
     data['price'] = this.price;
     data['unit'] = this.unit;
-    data['quantity'] = this.quantity;
     return data;
   }
 }

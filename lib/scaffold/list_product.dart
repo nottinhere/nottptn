@@ -46,7 +46,7 @@ class _ListProductState extends State<ListProduct> {
   int amontCart = 0;
   UserModel myUserModel;
 
-  int amountListView = 6;
+  int amountListView = 6, page = 1;
   ScrollController scrollController = ScrollController();
   final Debouncer debouncer =
       Debouncer(milliseconds: 500); // ตั้งค่า เวลาที่จะ delay
@@ -72,27 +72,38 @@ class _ListProductState extends State<ListProduct> {
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
-        print('in the end');
 
-        setState(() {
-          amountListView = amountListView + 2;
-          if (amountListView > filterProductAllModels.length) {
-            amountListView = filterProductAllModels.length;
-          }
-        });
+          page++;
+          readData();
+
+
+        // print('in the end');
+
+        // setState(() {
+        //   amountListView = amountListView + 2;
+        //   if (amountListView > filterProductAllModels.length) {
+        //     amountListView = filterProductAllModels.length;
+        //   }
+        // });
       }
     });
   }
 
   Future<void> readData() async {
     String url = MyStyle().readAllProduct;
+    url = '$url$page';
     if (myIndex != 0) {
       url = '${MyStyle().readProductWhereMode}$myIndex';
+      
+      
     }
 
     Response response = await get(url);
+    print('url readData ##################+++++++++++>>> $url');
     var result = json.decode(response.body);
-    print('result = $result');
+    // print('result = $result');
+    // print('url ListProduct ====>>>> $url');
+    // print('result ListProduct ========>>>>> $result');
 
     var itemProducts = result['itemsProduct'];
 
@@ -110,7 +121,8 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Widget showStock(int index) {
-    return Text(filterProductAllModels[index].stock);
+    return Text(filterProductAllModels[index].stock.toString());
+    // return Text('na');
   }
 
   Widget showText(int index) {
@@ -136,7 +148,7 @@ class _ListProductState extends State<ListProduct> {
     return Expanded(
       child: ListView.builder(
         controller: scrollController,
-        itemCount: amountListView,
+        itemCount: productAllModels.length,
         itemBuilder: (BuildContext buildContext, int index) {
           return GestureDetector(
             child: Row(

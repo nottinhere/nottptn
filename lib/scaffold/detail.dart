@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/product_all_model.dart';
+import 'package:nottptn/models/product_all_model2.dart';
 import 'package:nottptn/models/unit_size_model.dart';
 import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/scaffold/detail_cart.dart';
@@ -22,7 +23,7 @@ class Detail extends StatefulWidget {
 class _DetailState extends State<Detail> {
   // Explicit
   ProductAllModel currentProductAllModel;
-  ProductAllModel productAllModel;
+  ProductAllModel2 productAllModel;
   List<UnitSizeModel> unitSizeModels = List();
   List<int> amounts = [
     0,
@@ -47,21 +48,23 @@ class _DetailState extends State<Detail> {
 
   Future<void> getProductWhereID() async {
     if (currentProductAllModel != null) {
-      id = currentProductAllModel.id;
+      id = currentProductAllModel.id.toString();
       String url = '${MyStyle().getProductWhereId}$id';
+      print('url Detaillll ====>>> $url');
       Response response = await get(url);
       var result = json.decode(response.body);
-      print('result = $result');
+      print('result =0000000>>> $result');
 
       var itemProducts = result['itemsProduct'];
+      print('itemProducts ===>>>>$itemProducts');
       for (var map in itemProducts) {
-        print('map = $map');
+        print('map DEtail ==========>>>>>>>> $map');
 
         setState(() {
-          productAllModel = ProductAllModel.fromJson(map);
+          productAllModel = ProductAllModel2.fromJson(map);
 
           Map<String, dynamic> priceListMap = map['price_list'];
-          // print('priceListMap = $priceListMap');
+          print('priceListMap = $priceListMap');
 
           Map<String, dynamic> sizeSmap = priceListMap['s'];
           if (sizeSmap != null) {
@@ -78,10 +81,10 @@ class _DetailState extends State<Detail> {
             UnitSizeModel unitSizeModel = UnitSizeModel.fromJson(sizeLmap);
             unitSizeModels.add(unitSizeModel);
           }
-          // print('sizeSmap = $sizeSmap');
-          // print('sizeMmap = $sizeMmap');
-          // print('sizeLmap = $sizeLmap');
-          print('unitSizeModel = ${unitSizeModels[0].lable}');
+          print('sizeSmap = $sizeSmap');
+          print('sizeMmap = $sizeMmap');
+          print('sizeLmap = $sizeLmap');
+          // print('unitSizeModel = ${unitSizeModels[0].lable}');
         });
       } // for
     }
@@ -135,7 +138,7 @@ class _DetailState extends State<Detail> {
     return IconButton(
       icon: Icon(Icons.remove_circle_outline),
       onPressed: () {
-        print('dec index $index');
+        // print('dec index $index');
         if (value == 0) {
           normalDialog(context, 'Cannot decrese', 'Because empty cart');
         } else {
@@ -155,7 +158,7 @@ class _DetailState extends State<Detail> {
       icon: Icon(Icons.add_circle_outline),
       onPressed: () {
         setState(() {
-          print('inc index $index');
+          // print('inc index $index');
           value++;
           amounts[index] = value;
         });
@@ -198,6 +201,8 @@ class _DetailState extends State<Detail> {
     String memberId = myUserModel.id.toString();
     String url =
         'http://ptnpharma.com/app/json_loadmycart.php?memberId=$memberId';
+
+        print('url Detail =====>>>>>>>> $url');
 
     Response response = await get(url);
     var result = json.decode(response.body);
