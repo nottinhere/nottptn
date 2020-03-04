@@ -223,7 +223,9 @@ class _MyServiceState extends State<MyService> {
         userModel: myUserModel,
       );
     });
-    Navigator.of(context).push(materialPageRoute);
+    Navigator.of(context).push(materialPageRoute).then((value){
+      readCart();
+    });
   }
 
   @override

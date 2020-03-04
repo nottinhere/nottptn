@@ -55,12 +55,12 @@ class _DetailCartState extends State<DetailCart> {
     Response response = await get(url);
     var result = json.decode(response.body);
     var cartList = result['cart'];
-    print('cartList =======>>> $cartList');
+    // print('cartList =======>>> $cartList');
 
     for (var map in cartList) {
       ProductAllModel2 productAllModel = ProductAllModel2.fromJson(map);
 
-      print('productAllModel = ${productAllModel.toJson().toString()}');
+      // print('productAllModel = ${productAllModel.toJson().toString()}');
 
       Map<String, dynamic> priceListMap = map['price_list'];
 
@@ -76,7 +76,7 @@ class _DetailCartState extends State<DetailCart> {
         PriceListModel priceListModel = PriceListModel.fromJson(sizeSmap);
         priceListSModels.add(priceListModel);
       }
-       print('sizeSmap = $sizeSmap');
+      //  print('sizeSmap = $sizeSmap');
 
       Map<String, dynamic> sizeMmap = priceListMap['m'];
       if (sizeMmap == null) {
@@ -88,7 +88,7 @@ class _DetailCartState extends State<DetailCart> {
         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
         priceListMModels.add(priceListModel);
       }
-      print('sizeMmap = $sizeMmap');
+      // print('sizeMmap = $sizeMmap');
 
       Map<String, dynamic> sizeLmap = priceListMap['l'];
       if (sizeLmap == null) {
@@ -100,7 +100,7 @@ class _DetailCartState extends State<DetailCart> {
         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
         priceListLModels.add(priceListModel);
       }
-      print('sizeLmap = $sizeLmap');
+      // print('sizeLmap = $sizeLmap');
 
       setState(() {
         amontCart++;
@@ -272,7 +272,7 @@ class _DetailCartState extends State<DetailCart> {
         });
   }
 
-  Widget comfirmButton(int index, String size) {
+  Widget  comfirmButton(int index, String size) {
     return FlatButton(
       child: Text('Confirm'),
       onPressed: (){
@@ -290,7 +290,8 @@ class _DetailCartState extends State<DetailCart> {
 
         print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
 
-        String url = 'http://ptnpharma.com/app/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+        String url = 'http://ptnpharma.com/app2020/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+        print('url DeleteCart#######################======>>>> $url');
 
         await get(url).then((response) {
           readCart();
@@ -325,7 +326,7 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   Widget showMText(int index) {
-    String price = mMap[index]['price'];
+    String price = mMap[index]['price'].toString();
     String lable = mMap[index]['lable'];
     String quantity = mMap[index]['quantity'];
 
@@ -342,7 +343,7 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   Widget showLText(int index) {
-    String price = lMap[index]['price'];
+    String price = lMap[index]['price'].toString();
     String lable = lMap[index]['lable'];
     String quantity = lMap[index]['quantity'];
 
@@ -366,8 +367,8 @@ class _DetailCartState extends State<DetailCart> {
           children: <Widget>[
             showTitle(index),
             showSText(index),
-            // showMText(index),
-            // showLText(index),
+            showMText(index),
+            showLText(index),
             Divider(),
           ],
         );
