@@ -4,8 +4,8 @@ class PromoteModel {
   String photo;
   Null priceList;
   String detail;
-  String stock;
-  String id;
+  int stock;
+  int id;
 
   PromoteModel(
       {this.title,
@@ -38,3 +38,4 @@ class PromoteModel {
     return data;
   }
 }
+
