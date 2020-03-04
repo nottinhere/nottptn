@@ -11,7 +11,7 @@ class MyStyle {
 
   // For server 
 
-  String readAllProduct           = 'http://ptnpharma.com/app2020/json_product.php';
+  String readAllProduct           = 'http://ptnpharma.com/app2020/json_product.php?searchKey=&page=';
   String readProductWhereMode     = 'http://ptnpharma.com/app2020/json_product.php?product_mode=';
   String getUserWhereUserAndPass  = 'http://ptnpharma.com/app2020/json_login_get.php';
   String getProductWhereId        = 'http://ptnpharma.com/app2020/json_productdetail.php?id=';
