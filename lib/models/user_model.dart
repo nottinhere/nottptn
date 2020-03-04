@@ -1,5 +1,5 @@
 class UserModel {
-  String id;
+  int id;
   String customerCode;
   String user;
   String pass;
@@ -12,7 +12,7 @@ class UserModel {
   String phone;
   String email;
   String cart;
-  String status;
+  int status;
   String proId;
   String telecart;
   String contactPerson;
@@ -23,11 +23,12 @@ class UserModel {
   String licenseID;
   String licenseType;
   String number;
-  String discount;
-  String financialAmount;
+  int discount;
+  int financialAmount;
   String cartJson;
   String lineID;
   String facebook;
+  int premium;
 
   UserModel(
       {this.id,
@@ -58,7 +59,8 @@ class UserModel {
       this.financialAmount,
       this.cartJson,
       this.lineID,
-      this.facebook});
+      this.facebook,
+      this.premium});
 
   UserModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -90,6 +92,7 @@ class UserModel {
     cartJson = json['cart_json'];
     lineID = json['lineID'];
     facebook = json['facebook'];
+    premium = json['premium'];
   }
 
   Map<String, dynamic> toJson() {
@@ -123,6 +126,8 @@ class UserModel {
     data['cart_json'] = this.cartJson;
     data['lineID'] = this.lineID;
     data['facebook'] = this.facebook;
+    data['premium'] = this.premium;
     return data;
   }
 }
+
