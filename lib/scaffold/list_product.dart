@@ -72,7 +72,7 @@ class _ListProductState extends State<ListProduct> {
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
-        print('in the end');
+        // print('in the end');
 
         setState(() {
           amountListView = amountListView + 2;
@@ -88,11 +88,14 @@ class _ListProductState extends State<ListProduct> {
     String url = MyStyle().readAllProduct;
     if (myIndex != 0) {
       url = '${MyStyle().readProductWhereMode}$myIndex';
+      
     }
 
     Response response = await get(url);
     var result = json.decode(response.body);
-    print('result = $result');
+    // print('result = $result');
+    // print('url ListProduct ====>>>> $url');
+    // print('result ListProduct ========>>>>> $result');
 
     var itemProducts = result['itemsProduct'];
 
@@ -110,7 +113,8 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Widget showStock(int index) {
-    return Text(filterProductAllModels[index].stock);
+    // return Text(filterProductAllModels[index].stock);
+    return Text('na');
   }
 
   Widget showText(int index) {

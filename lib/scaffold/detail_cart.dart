@@ -203,7 +203,7 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   Widget okButton(int index, String size) {
-    String productID = productAllModels[index].id;
+    String productID = productAllModels[index].id.toString();
     String unitSize = size;
     String memberID = myUserModel.id.toString();
 
@@ -276,7 +276,7 @@ class _DetailCartState extends State<DetailCart> {
 
   Future<void> deleteCart(int index, String size)async{
 
-        String productID  = productAllModels[index].id;
+        String productID  = productAllModels[index].id.toString();
         String unitSize   = size;
         String memberID   = myUserModel.id.toString(); 
 

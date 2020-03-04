@@ -21,8 +21,9 @@ class _HomeState extends State<Home> {
   // List<PromoteModel> promoteModels = List();
   List<Widget> promoteLists = List();
   List<String> urlImages = List();
-  int amontCart = 0;
+  int amontCart = 0, banerIndex=0;
   UserModel myUserModel;
+
 
   // Method
   @override
@@ -33,7 +34,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> readPromotion() async {
-    String url = 'http://ptnpharma.com/app/json_promotion.php';
+    String url = 'http://ptnpharma.com/app2020/json_promotion.php';
     Response response = await get(url);
     var result = json.decode(response.body);
     var mapItemProduct =
@@ -56,13 +57,21 @@ class _HomeState extends State<Home> {
   }
 
   Widget showCarouseSlider() {
-    return CarouselSlider(
-      enlargeCenterPage: true,
-      aspectRatio: 16 / 9,
-      pauseAutoPlayOnTouch: Duration(seconds: 5),
-      autoPlay: true,
-      autoPlayAnimationDuration: Duration(seconds: 5),
-      items: promoteLists,
+    return GestureDetector(onTap: (){
+      // print('You Click index is $banerIndex');
+    },
+          child: CarouselSlider(
+        enlargeCenterPage: true,
+        aspectRatio: 16 / 9,
+        pauseAutoPlayOnTouch: Duration(seconds: 5),
+        autoPlay: true,
+        autoPlayAnimationDuration: Duration(seconds: 5),
+        items: promoteLists,
+        onPageChanged: (int index){
+          banerIndex = index;
+          // print('index = $index');
+        },
+      ),
     );
   }
 
@@ -109,7 +118,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         onTap: () {
-          print('You click promotion');
+          // print('You click promotion');
           routeToListProduct(0);
         },
       ),
@@ -132,7 +141,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         onTap: () {
-          print('You click newproduct');
+          // print('You click newproduct');
           routeToListProduct(1);
         },
       ),
@@ -155,7 +164,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         onTap: () {
-          print('You click updateprice');
+          // print('You click updateprice');
           routeToListProduct(2);
         },
       ),
@@ -178,7 +187,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         onTap: () {
-          print('You click recommend');
+          // print('You click recommend');
           routeToListProduct(3);
         },
       ),
