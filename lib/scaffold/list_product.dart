@@ -45,6 +45,7 @@ class _ListProductState extends State<ListProduct> {
   List<ProductAllModel> filterProductAllModels = List();
   int amontCart = 0;
   UserModel myUserModel;
+  String searchString = '';
 
   int amountListView = 6, page = 1;
   ScrollController scrollController = ScrollController();
@@ -72,10 +73,8 @@ class _ListProductState extends State<ListProduct> {
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
-
-          page++;
-          readData();
-
+        page++;
+        readData();
 
         // print('in the end');
 
@@ -90,12 +89,10 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Future<void> readData() async {
-    String url = MyStyle().readAllProduct;
-    url = '$url$page';
+    // String url = MyStyle().readAllProduct;
+    String url = 'http://ptnpharma.com/app2020/json_product.php?searchKey=$searchString&page=$page';
     if (myIndex != 0) {
       url = '${MyStyle().readProductWhereMode}$myIndex';
-      
-      
     }
 
     Response response = await get(url);
@@ -195,23 +192,37 @@ class _ListProductState extends State<ListProduct> {
     return Container(
       // color: Colors.grey,
       padding:
-          EdgeInsets.only(left: 40.0, right: 40.0, top: 20.0, bottom: 20.0),
-      child: TextField(
-        decoration: InputDecoration(hintText: 'Search'),
-        onChanged: (String string) {
-          statusStart = false;
-          debouncer.run(() {
-            setState(() {
-              filterProductAllModels =
-                  productAllModels.where((ProductAllModel productAllModel) {
-                return (productAllModel.title
-                    .toLowerCase()
-                    .contains(string.toLowerCase()));
-              }).toList();
-              amountListView = filterProductAllModels.length;
-            });
+          EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: 20.0),
+      child: ListTile(
+        trailing: IconButton(icon: Icon(Icons.search), onPressed: () {
+          print('searchString ===>>> $searchString');
+
+          setState(() {
+            page = 1;
+            productAllModels.clear();
+            readData();
           });
-        },
+
+        }),
+        title: TextField(
+          decoration: InputDecoration(hintText: 'Search'),
+          onChanged: (String string) {
+            searchString = string.trim();
+
+            // statusStart = false;
+            // debouncer.run(() {
+            //   setState(() {
+            //     filterProductAllModels =
+            //         productAllModels.where((ProductAllModel productAllModel) {
+            //       return (productAllModel.title
+            //           .toLowerCase()
+            //           .contains(string.toLowerCase()));
+            //     }).toList();
+            //     amountListView = filterProductAllModels.length;
+            //   });
+            // });
+          },
+        ),
       ),
     );
   }

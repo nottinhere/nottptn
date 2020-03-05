@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:nottptn/models/product_all_model.dart';
 import 'package:nottptn/models/promote_model.dart';
 import 'package:nottptn/models/user_model.dart';
+import 'package:nottptn/scaffold/detail.dart';
 import 'package:nottptn/scaffold/list_product.dart';
 
 class Home extends StatefulWidget {
-
   final UserModel userModel;
-  Home ({Key key,this.userModel}):super(key:key);
+  Home({Key key, this.userModel}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -20,16 +21,21 @@ class _HomeState extends State<Home> {
   // Explicit
   // List<PromoteModel> promoteModels = List();
   List<Widget> promoteLists = List();
+  List<Widget> suggestLists = List();
   List<String> urlImages = List();
-  int amontCart = 0, banerIndex=0;
-  UserModel myUserModel;
+  List<String> urlImagesSuggest = List();
 
+  int amontCart = 0, banerIndex = 0, suggessIndex = 0;
+  UserModel myUserModel;
+  List<ProductAllModel> promoteModels = List();
+  List<ProductAllModel> suggestModels = List();
 
   // Method
   @override
   void initState() {
     super.initState();
     readPromotion();
+    readSuggest();
     myUserModel = widget.userModel;
   }
 
@@ -41,11 +47,37 @@ class _HomeState extends State<Home> {
         result['itemsProduct']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
     for (var map in mapItemProduct) {
       PromoteModel promoteModel = PromoteModel.fromJson(map);
+      ProductAllModel productAllModel = ProductAllModel.fromJson(map);
       String urlImage = promoteModel.photo;
       setState(() {
         //promoteModels.add(promoteModel); // push ค่าลง array
-        promoteLists.add(Image.network(urlImage));
+        promoteModels.add(productAllModel);
+        promoteLists.add(showImageNetWork(urlImage));
         urlImages.add(urlImage);
+      });
+    }
+  }
+
+  Image showImageNetWork(String urlImage) {
+    return Image.network(urlImage);
+  }
+
+  Future<void> readSuggest() async {
+    String url = 'http://ptnpharma.com/app2020/json_suggest.php';
+    Response response = await get(url);
+    var result = json.decode(response.body);
+    var mapItemProduct =
+        result['itemsProduct']; // dynamic    จะส่ง value อะไรก็ได้ รวมถึง null
+    for (var map in mapItemProduct) {
+      PromoteModel promoteModel = PromoteModel.fromJson(map);
+      
+      ProductAllModel productAllModel = ProductAllModel.fromJson(map);
+      String urlImage = promoteModel.photo;
+      setState(() {
+        //promoteModels.add(promoteModel); // push ค่าลง array
+        suggestModels.add(productAllModel);
+        suggestLists.add(Image.network(urlImage));
+        urlImagesSuggest.add(urlImage);
       });
     }
   }
@@ -57,18 +89,53 @@ class _HomeState extends State<Home> {
   }
 
   Widget showCarouseSlider() {
-    return GestureDetector(onTap: (){
-      // print('You Click index is $banerIndex');
-    },
-          child: CarouselSlider(
+    return GestureDetector(
+      onTap: () {
+        print('You Click index is $banerIndex');
+
+        MaterialPageRoute route = MaterialPageRoute(
+          builder: (BuildContext context) => Detail(
+            productAllModel: promoteModels[banerIndex],
+          ),
+        );
+        Navigator.of(context).push(route).then((value) {});
+      },
+      child: CarouselSlider(
         enlargeCenterPage: true,
         aspectRatio: 16 / 9,
         pauseAutoPlayOnTouch: Duration(seconds: 5),
         autoPlay: true,
         autoPlayAnimationDuration: Duration(seconds: 5),
         items: promoteLists,
-        onPageChanged: (int index){
+        onPageChanged: (int index) {
           banerIndex = index;
+          // print('index = $index');
+        },
+      ),
+    );
+  }
+
+  Widget showCarouseSliderSuggest() {
+    return GestureDetector(
+      onTap: () {
+        print('You Click index is $suggessIndex');
+
+        MaterialPageRoute route = MaterialPageRoute(
+          builder: (BuildContext context) => Detail(
+            productAllModel: suggestModels[suggessIndex],
+          ),
+        );
+        Navigator.of(context).push(route).then((value) {});
+      },
+      child: CarouselSlider(
+        enlargeCenterPage: true,
+        aspectRatio: 16 / 9,
+        pauseAutoPlayOnTouch: Duration(seconds: 5),
+        autoPlay: true,
+        autoPlayAnimationDuration: Duration(seconds: 5),
+        items: suggestLists,
+        onPageChanged: (int index) {
+          suggessIndex = index;
           // print('index = $index');
         },
       ),
@@ -79,7 +146,8 @@ class _HomeState extends State<Home> {
     return Container(
       padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
       height: MediaQuery.of(context).size.height * 0.25,
-      child: promoteLists.length == 0 ? myCircularProgress() : showCarouseSlider(),
+      child:
+          promoteLists.length == 0 ? myCircularProgress() : showCarouseSlider(),
     );
   }
 
@@ -87,7 +155,8 @@ class _HomeState extends State<Home> {
     return Container(
       color: Colors.grey.shade400,
       height: MediaQuery.of(context).size.height * 0.25,
-      child: promoteLists.length == 0 ? myCircularProgress() : showCarouseSlider(),
+      child:
+          suggestLists.length == 0 ? myCircularProgress() : showCarouseSliderSuggest(),
     );
   }
 
@@ -99,7 +168,9 @@ class _HomeState extends State<Home> {
         userModel: myUserModel,
       );
     });
-    Navigator.of(context).push(materialPageRoute);
+    Navigator.of(context).push(materialPageRoute).then((value) {
+      print('back Frome ListView');
+    });
   }
 
   Widget topLeft() {
@@ -112,7 +183,7 @@ class _HomeState extends State<Home> {
           child: Container(
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Text(
-              'promotion',
+              'promotion123',
               style: TextStyle(color: Colors.black),
             ),
           ),
@@ -228,7 +299,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

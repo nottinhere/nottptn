@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/price_list_model.dart';
-import 'package:nottptn/models/product_all_model.dart';
+
 import 'package:nottptn/models/product_all_model2.dart';
 import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/utility/my_style.dart';
+import 'package:nottptn/utility/normal_dialog.dart';
 
 class DetailCart extends StatefulWidget {
   final UserModel userModel;
@@ -31,12 +31,16 @@ class _DetailCartState extends State<DetailCart> {
   List<Map<String, dynamic>> lMap = List();
   int amontCart = 0;
   String newQTY = '';
+  double total = 0;
+  String transport;
+  int index = 0;
+  String comment = '', memberID;
 
   // Method
   @override
   void initState() {
     // initState = auto load เพื่อแสดงใน  stateless
-   
+
     super.initState();
     myUserModel = widget.userModel;
     setState(() {
@@ -65,7 +69,6 @@ class _DetailCartState extends State<DetailCart> {
       Map<String, dynamic> priceListMap = map['price_list'];
 
       Map<String, dynamic> sizeSmap = priceListMap['s'];
-     
 
       if (sizeSmap == null) {
         sMap.add({'lable': ''});
@@ -75,7 +78,10 @@ class _DetailCartState extends State<DetailCart> {
         sMap.add(sizeSmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeSmap);
         priceListSModels.add(priceListModel);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
+
       //  print('sizeSmap = $sizeSmap');
 
       Map<String, dynamic> sizeMmap = priceListMap['m'];
@@ -87,6 +93,8 @@ class _DetailCartState extends State<DetailCart> {
         mMap.add(sizeMmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
         priceListMModels.add(priceListModel);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeMmap = $sizeMmap');
 
@@ -99,6 +107,8 @@ class _DetailCartState extends State<DetailCart> {
         lMap.add(sizeLmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
         priceListLModels.add(priceListModel);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeLmap = $sizeLmap');
 
@@ -110,6 +120,7 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   void clearArray() {
+    total = 0;
     productAllModels.clear();
     priceListSModels.clear();
     priceListMModels.clear();
@@ -185,6 +196,7 @@ class _DetailCartState extends State<DetailCart> {
         Container(
           width: 50.0,
           child: TextFormField(
+            keyboardType: TextInputType.number,
             onChanged: (String string) {
               newQTY = string.trim();
             },
@@ -272,30 +284,30 @@ class _DetailCartState extends State<DetailCart> {
         });
   }
 
-  Widget  comfirmButton(int index, String size) {
+  Widget comfirmButton(int index, String size) {
     return FlatButton(
       child: Text('Confirm'),
-      onPressed: (){
+      onPressed: () {
         deleteCart(index, size);
         Navigator.of(context).pop();
       },
     );
   }
 
-  Future<void> deleteCart(int index, String size)async{
+  Future<void> deleteCart(int index, String size) async {
+    String productID = productAllModels[index].id.toString();
+    String unitSize = size;
+    String memberID = myUserModel.id.toString();
 
-        String productID  = productAllModels[index].id.toString();
-        String unitSize   = size;
-        String memberID   = myUserModel.id.toString(); 
+    print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
 
-        print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
+    String url =
+        'http://ptnpharma.com/app2020/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+    print('url DeleteCart#######################======>>>> $url');
 
-        String url = 'http://ptnpharma.com/app2020/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
-        print('url DeleteCart#######################======>>>> $url');
-
-        await get(url).then((response) {
-          readCart();
-        });
+    await get(url).then((response) {
+      readCart();
+    });
   }
 
   Widget editAndDeleteButton(int index, String size) {
@@ -313,6 +325,8 @@ class _DetailCartState extends State<DetailCart> {
     String lable = sMap[index]['lable'];
     String quantity = sMap[index]['quantity'];
 
+    // canculateTotal(price, quantity);
+
     return lable.isEmpty
         ? SizedBox()
         : Row(
@@ -323,6 +337,15 @@ class _DetailCartState extends State<DetailCart> {
               editAndDeleteButton(index, 's'),
             ],
           );
+  }
+
+  void calculateTotal(String price, String quantity) {
+    double priceDou = double.parse(price);
+    print('price Dou ====>>>> $priceDou');
+    double quantityDou = double.parse(quantity);
+    print('quantityDou ====>> $quantityDou');
+    total = total + (priceDou * quantityDou);
+    print('total = $total');
   }
 
   Widget showMText(int index) {
@@ -361,6 +384,8 @@ class _DetailCartState extends State<DetailCart> {
 
   Widget showListCart() {
     return ListView.builder(
+      physics: ScrollPhysics(),
+      shrinkWrap: true,
       itemCount: productAllModels.length,
       itemBuilder: (BuildContext buildContext, int index) {
         return Column(
@@ -376,13 +401,163 @@ class _DetailCartState extends State<DetailCart> {
     );
   }
 
+  Widget showTotal() {
+    return Text(
+      'Total = $total BHT',
+      style: TextStyle(
+        fontSize: 30.0,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  void selectedTransport(String string) {
+    transport = string;
+    print('Transport ==> $transport');
+    setState(() {
+      index = int.parse(string);
+    });
+  }
+
+  Widget showTitleTransport() {
+    List<String> list = [
+      '',
+      'รถส่งของ ตามสายส่ง',
+      'ส่งทางบริษัทขนส่ง (เอกชน)',
+      'รับสินค้าเองที่ พัฒนาเภสัช',
+      'รถส่งของตามรอบส่งสินค้า ในเมืองนครสวรรค์',
+      'รับสินค้าเองที่ คลังสินค้า (ซอยวัดท่าทอง)'
+    ];
+    return Text(
+      'การจัดส่ง : ${list[index]}',
+      style: TextStyle(
+        fontSize: 24.0,
+      ),
+    );
+  }
+
+  Widget showTransport() {
+    return PopupMenuButton<String>(
+      onSelected: (String string) {
+        selectedTransport(string);
+      },
+      child: showTitleTransport(),
+      itemBuilder: (BuildContext context) {
+        return [
+          PopupMenuItem(
+            child: Text('รถส่งของ ตามสายส่ง'),
+            value: '1',
+          ),
+          PopupMenuItem(
+            child: Text('ส่งทางบริษัทขนส่ง (เอกชน)'),
+            value: '2',
+          ),
+          PopupMenuItem(
+            child: Text('รับสินค้าเองที่ พัฒนาเภสัช'),
+            value: '3',
+          ),
+          PopupMenuItem(
+            child: Text('รถส่งของตามรอบส่งสินค้า ในเมืองนครสวรรค์'),
+            value: '4',
+          ),
+          PopupMenuItem(
+            child: Text('รับสินค้าเองที่ คลังสินค้า (ซอยวัดท่าทอง)'),
+            value: '5',
+          ),
+        ];
+      },
+    );
+  }
+
+  Widget commentBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 30.0, right: 30.0),
+      child: TextField(
+        onChanged: (value) {
+          comment = value.trim();
+        },
+        keyboardType: TextInputType.multiline,
+        maxLines: 4,
+        decoration: InputDecoration(labelText: 'Comment :'),
+      ),
+    );
+  }
+
+  Widget submitButton() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(right: 30.0),
+          child: RaisedButton(
+            onPressed: () {
+              if (transport == null) {
+                normalDialog(context, 'ยังไม่เลือก การขอส่ง',
+                    'กรุณา เลือกการขนส่ง ด้วยคะ');
+              } else {
+                memberID = myUserModel.id.toString();
+                print(
+                    'transport = $transport, comment = $comment, memberID = $memberID');
+
+                submitThread();
+              }
+            },
+            child: Text('Submit'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> submitThread() async {
+    try {
+      String url =
+          'http://ptnpharma.com/app2020/json_submit_myorder.php?memberId=$memberID&transport=$transport&comment=$comment';
+
+      await get(url).then((value) {
+        confirmSubmit();
+      });
+    } catch (e) {}
+  }
+
+  Future<void> confirmSubmit() async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Complete'),
+            content: Text('Success Order'),
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    backProcess();
+                  },
+                  child: Text('OK'))
+            ],
+          );
+        });
+  }
+
+  void backProcess() {
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Cart'),
       ),
-      body: showListCart(),
+      body: ListView(
+        children: <Widget>[
+          showListCart(),
+          showTotal(),
+          showTransport(),
+          commentBox(),
+          submitButton(),
+        ],
+      ),
     );
   }
 }
