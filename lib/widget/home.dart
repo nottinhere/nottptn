@@ -52,10 +52,14 @@ class _HomeState extends State<Home> {
       setState(() {
         //promoteModels.add(promoteModel); // push ค่าลง array
         promoteModels.add(productAllModel);
-        promoteLists.add(Image.network(urlImage));
+        promoteLists.add(showImageNetWork(urlImage));
         urlImages.add(urlImage);
       });
     }
+  }
+
+  Image showImageNetWork(String urlImage) {
+    return Image.network(urlImage);
   }
 
   Future<void> readSuggest() async {
