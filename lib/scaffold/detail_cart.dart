@@ -1,10 +1,9 @@
 import 'dart:convert';
 
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:nottptn/models/price_list_model.dart';
-import 'package:nottptn/models/product_all_model.dart';
+
 import 'package:nottptn/models/product_all_model2.dart';
 import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/utility/my_style.dart';
@@ -31,12 +30,13 @@ class _DetailCartState extends State<DetailCart> {
   List<Map<String, dynamic>> lMap = List();
   int amontCart = 0;
   String newQTY = '';
+  double total = 0;
 
   // Method
   @override
   void initState() {
     // initState = auto load เพื่อแสดงใน  stateless
-   
+
     super.initState();
     myUserModel = widget.userModel;
     setState(() {
@@ -65,7 +65,6 @@ class _DetailCartState extends State<DetailCart> {
       Map<String, dynamic> priceListMap = map['price_list'];
 
       Map<String, dynamic> sizeSmap = priceListMap['s'];
-     
 
       if (sizeSmap == null) {
         sMap.add({'lable': ''});
@@ -75,7 +74,11 @@ class _DetailCartState extends State<DetailCart> {
         sMap.add(sizeSmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeSmap);
         priceListSModels.add(priceListModel);
+        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
       }
+
+      
+
       //  print('sizeSmap = $sizeSmap');
 
       Map<String, dynamic> sizeMmap = priceListMap['m'];
@@ -87,6 +90,7 @@ class _DetailCartState extends State<DetailCart> {
         mMap.add(sizeMmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
         priceListMModels.add(priceListModel);
+        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeMmap = $sizeMmap');
 
@@ -99,6 +103,7 @@ class _DetailCartState extends State<DetailCart> {
         lMap.add(sizeLmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
         priceListLModels.add(priceListModel);
+        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeLmap = $sizeLmap');
 
@@ -110,6 +115,7 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   void clearArray() {
+    total = 0;
     productAllModels.clear();
     priceListSModels.clear();
     priceListMModels.clear();
@@ -184,7 +190,7 @@ class _DetailCartState extends State<DetailCart> {
         Text('Size = $size'),
         Container(
           width: 50.0,
-          child: TextFormField(
+          child: TextFormField(keyboardType: TextInputType.number,
             onChanged: (String string) {
               newQTY = string.trim();
             },
@@ -272,30 +278,30 @@ class _DetailCartState extends State<DetailCart> {
         });
   }
 
-  Widget  comfirmButton(int index, String size) {
+  Widget comfirmButton(int index, String size) {
     return FlatButton(
       child: Text('Confirm'),
-      onPressed: (){
+      onPressed: () {
         deleteCart(index, size);
         Navigator.of(context).pop();
       },
     );
   }
 
-  Future<void> deleteCart(int index, String size)async{
+  Future<void> deleteCart(int index, String size) async {
+    String productID = productAllModels[index].id.toString();
+    String unitSize = size;
+    String memberID = myUserModel.id.toString();
 
-        String productID  = productAllModels[index].id.toString();
-        String unitSize   = size;
-        String memberID   = myUserModel.id.toString(); 
+    print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
 
-        print('productID = $productID ,unitSize = $unitSize ,memberID = $memberID');
+    String url =
+        'http://ptnpharma.com/app2020/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
+    print('url DeleteCart#######################======>>>> $url');
 
-        String url = 'http://ptnpharma.com/app2020/json_removeitemincart.php?productID=$productID&unitSize=$unitSize&memberID=$memberID';
-        print('url DeleteCart#######################======>>>> $url');
-
-        await get(url).then((response) {
-          readCart();
-        });
+    await get(url).then((response) {
+      readCart();
+    });
   }
 
   Widget editAndDeleteButton(int index, String size) {
@@ -313,6 +319,9 @@ class _DetailCartState extends State<DetailCart> {
     String lable = sMap[index]['lable'];
     String quantity = sMap[index]['quantity'];
 
+    // canculateTotal(price, quantity);
+
+
     return lable.isEmpty
         ? SizedBox()
         : Row(
@@ -323,6 +332,15 @@ class _DetailCartState extends State<DetailCart> {
               editAndDeleteButton(index, 's'),
             ],
           );
+  }
+
+  void calculateTotal(String price, String quantity) {
+    double priceDou = double.parse(price);
+    print('price Dou ====>>>> $priceDou');
+    double quantityDou = double.parse(quantity);
+    print('quantityDou ====>> $quantityDou');
+    total = total + (priceDou * quantityDou);
+    print('total = $total');
   }
 
   Widget showMText(int index) {
@@ -361,6 +379,8 @@ class _DetailCartState extends State<DetailCart> {
 
   Widget showListCart() {
     return ListView.builder(
+      physics: ScrollPhysics(),
+      shrinkWrap: true,
       itemCount: productAllModels.length,
       itemBuilder: (BuildContext buildContext, int index) {
         return Column(
@@ -376,13 +396,23 @@ class _DetailCartState extends State<DetailCart> {
     );
   }
 
+  Widget showTotal() {
+    
+    return Text('Show Total = $total');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Cart'),
       ),
-      body: showListCart(),
+      body: ListView(
+        children: <Widget>[
+          showListCart(),
+          showTotal(),
+        ],
+      ),
     );
   }
 }
