@@ -7,6 +7,7 @@ import 'package:nottptn/models/price_list_model.dart';
 import 'package:nottptn/models/product_all_model2.dart';
 import 'package:nottptn/models/user_model.dart';
 import 'package:nottptn/utility/my_style.dart';
+import 'package:nottptn/utility/normal_dialog.dart';
 
 class DetailCart extends StatefulWidget {
   final UserModel userModel;
@@ -31,6 +32,9 @@ class _DetailCartState extends State<DetailCart> {
   int amontCart = 0;
   String newQTY = '';
   double total = 0;
+  String transport;
+  int index = 0;
+  String comment = '', memberID;
 
   // Method
   @override
@@ -74,10 +78,9 @@ class _DetailCartState extends State<DetailCart> {
         sMap.add(sizeSmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeSmap);
         priceListSModels.add(priceListModel);
-        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
-
-      
 
       //  print('sizeSmap = $sizeSmap');
 
@@ -90,7 +93,8 @@ class _DetailCartState extends State<DetailCart> {
         mMap.add(sizeMmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeMmap);
         priceListMModels.add(priceListModel);
-        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeMmap = $sizeMmap');
 
@@ -103,7 +107,8 @@ class _DetailCartState extends State<DetailCart> {
         lMap.add(sizeLmap);
         PriceListModel priceListModel = PriceListModel.fromJson(sizeLmap);
         priceListLModels.add(priceListModel);
-        calculateTotal(priceListModel.price.toString(), priceListModel.quantity);
+        calculateTotal(
+            priceListModel.price.toString(), priceListModel.quantity);
       }
       // print('sizeLmap = $sizeLmap');
 
@@ -190,7 +195,8 @@ class _DetailCartState extends State<DetailCart> {
         Text('Size = $size'),
         Container(
           width: 50.0,
-          child: TextFormField(keyboardType: TextInputType.number,
+          child: TextFormField(
+            keyboardType: TextInputType.number,
             onChanged: (String string) {
               newQTY = string.trim();
             },
@@ -321,7 +327,6 @@ class _DetailCartState extends State<DetailCart> {
 
     // canculateTotal(price, quantity);
 
-
     return lable.isEmpty
         ? SizedBox()
         : Row(
@@ -397,8 +402,145 @@ class _DetailCartState extends State<DetailCart> {
   }
 
   Widget showTotal() {
-    
-    return Text('Show Total = $total');
+    return Text(
+      'Total = $total BHT',
+      style: TextStyle(
+        fontSize: 30.0,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  void selectedTransport(String string) {
+    transport = string;
+    print('Transport ==> $transport');
+    setState(() {
+      index = int.parse(string);
+    });
+  }
+
+  Widget showTitleTransport() {
+    List<String> list = [
+      '',
+      'รถส่งของ ตามสายส่ง',
+      'ส่งทางบริษัทขนส่ง (เอกชน)',
+      'รับสินค้าเองที่ พัฒนาเภสัช',
+      'รถส่งของตามรอบส่งสินค้า ในเมืองนครสวรรค์',
+      'รับสินค้าเองที่ คลังสินค้า (ซอยวัดท่าทอง)'
+    ];
+    return Text(
+      'การจัดส่ง : ${list[index]}',
+      style: TextStyle(
+        fontSize: 24.0,
+      ),
+    );
+  }
+
+  Widget showTransport() {
+    return PopupMenuButton<String>(
+      onSelected: (String string) {
+        selectedTransport(string);
+      },
+      child: showTitleTransport(),
+      itemBuilder: (BuildContext context) {
+        return [
+          PopupMenuItem(
+            child: Text('รถส่งของ ตามสายส่ง'),
+            value: '1',
+          ),
+          PopupMenuItem(
+            child: Text('ส่งทางบริษัทขนส่ง (เอกชน)'),
+            value: '2',
+          ),
+          PopupMenuItem(
+            child: Text('รับสินค้าเองที่ พัฒนาเภสัช'),
+            value: '3',
+          ),
+          PopupMenuItem(
+            child: Text('รถส่งของตามรอบส่งสินค้า ในเมืองนครสวรรค์'),
+            value: '4',
+          ),
+          PopupMenuItem(
+            child: Text('รับสินค้าเองที่ คลังสินค้า (ซอยวัดท่าทอง)'),
+            value: '5',
+          ),
+        ];
+      },
+    );
+  }
+
+  Widget commentBox() {
+    return Container(
+      margin: EdgeInsets.only(left: 30.0, right: 30.0),
+      child: TextField(
+        onChanged: (value) {
+          comment = value.trim();
+        },
+        keyboardType: TextInputType.multiline,
+        maxLines: 4,
+        decoration: InputDecoration(labelText: 'Comment :'),
+      ),
+    );
+  }
+
+  Widget submitButton() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(right: 30.0),
+          child: RaisedButton(
+            onPressed: () {
+              if (transport == null) {
+                normalDialog(context, 'ยังไม่เลือก การขอส่ง',
+                    'กรุณา เลือกการขนส่ง ด้วยคะ');
+              } else {
+                memberID = myUserModel.id.toString();
+                print(
+                    'transport = $transport, comment = $comment, memberID = $memberID');
+
+                submitThread();
+              }
+            },
+            child: Text('Submit'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> submitThread() async {
+    try {
+      String url =
+          'http://ptnpharma.com/app2020/json_submit_myorder.php?memberId=$memberID&transport=$transport&comment=$comment';
+
+      await get(url).then((value) {
+        confirmSubmit();
+      });
+    } catch (e) {}
+  }
+
+  Future<void> confirmSubmit() async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Complete'),
+            content: Text('Success Order'),
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    backProcess();
+                  },
+                  child: Text('OK'))
+            ],
+          );
+        });
+  }
+
+  void backProcess() {
+    Navigator.of(context).pop();
   }
 
   @override
@@ -411,6 +553,9 @@ class _DetailCartState extends State<DetailCart> {
         children: <Widget>[
           showListCart(),
           showTotal(),
+          showTransport(),
+          commentBox(),
+          submitButton(),
         ],
       ),
     );

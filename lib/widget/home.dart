@@ -99,7 +99,9 @@ class _HomeState extends State<Home> {
         userModel: myUserModel,
       );
     });
-    Navigator.of(context).push(materialPageRoute);
+    Navigator.of(context).push(materialPageRoute).then((value){
+      print('back Frome ListView');
+    });
   }
 
   Widget topLeft() {
@@ -112,7 +114,7 @@ class _HomeState extends State<Home> {
           child: Container(
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Text(
-              'promotion',
+              'promotion123',
               style: TextStyle(color: Colors.black),
             ),
           ),
